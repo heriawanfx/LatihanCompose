@@ -11,6 +11,6 @@ data class Note(
     private val initialExpanded: Boolean = false,
     private val initialChecked: Boolean = false,
 ) {
-    var isExpanded by mutableStateOf(initialExpanded)
-    var isChecked by mutableStateOf(initialChecked)
+    var isExpanded: Boolean by mutableStateOf(initialExpanded)
+    var isChecked: Boolean by mutableStateOf(initialChecked)
 }

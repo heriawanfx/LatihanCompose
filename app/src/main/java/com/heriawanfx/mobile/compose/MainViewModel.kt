@@ -1,17 +1,20 @@
 package com.heriawanfx.mobile.compose
 
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.ViewModel
 
 class MainViewModel : ViewModel() {
-    private val _notes: SnapshotStateList<Note>
+    /**
+     * Jangan mengubah tipe ini menjadi SnapshotStateList
+     * menyebabkan state menjadi tidak berfungsi
+     */
+    private val _notes: MutableList<Note>
         get() = getNotesList().toMutableStateList()
     val notes: List<Note>
         get() = _notes
 
     private fun getNotesList(): List<Note> {
-        return List(5) {
+        return List(50) {
             val id = it + 1
             Note(id, "Title #$id", "Description #$id")
         }
