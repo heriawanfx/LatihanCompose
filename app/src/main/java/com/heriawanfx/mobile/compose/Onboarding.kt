@@ -19,7 +19,7 @@ fun OnBoardingScreen(onButtonClicked: () -> Unit) { //hoisting
         Surface(color = MaterialTheme.colors.primaryVariant) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "Show onboarding screen")
+                    Text(text = "Welcome to Notes Compose App")
                     Button(onClick = onButtonClicked) {
                         Text(text = "Continue")
                     }

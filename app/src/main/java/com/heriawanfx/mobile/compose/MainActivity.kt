@@ -9,6 +9,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.runtime.*
@@ -34,97 +36,135 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun HomePageView(showOnBoarding: Boolean = true) {
     AMSComposeTheme {
-
         //Persisting state
         var shouldShowOnBoarding by rememberSaveable { mutableStateOf(showOnBoarding) }
         if (shouldShowOnBoarding) {
             OnBoardingScreen(onButtonClicked = { shouldShowOnBoarding = false })
         } else {
-            NumberScreen()
+            NotesScreen()
         }
     }
 }
 
 @Composable
-fun NumberScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel = viewModel() ) {
+fun NotesScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel = viewModel()) {
 
-    var isShowAll by remember { mutableStateOf(false) }
+    var isShowAll by rememberSaveable { mutableStateOf(false) }
 
     Surface(
         color = MaterialTheme.colors.background,
     ) {
         Scaffold(
             topBar = {
-                TopAppBar(title = { Text(text = "Home")})
+                TopAppBar(title = { Text(text = "List of Notes") })
             },
-        ){
+            floatingActionButton = {
+                FloatingActionButton(onClick = { mainViewModel.addNewNote() }) {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = "Add New"
+                    )
+                }
+            },
+            floatingActionButtonPosition = FabPosition.End
+        ) {
             Column(modifier = modifier.padding(horizontal = 16.dp)) {
-                TotalView(list = mainViewModel.numbers, onShowAll = { isShowAll = !isShowAll })
-                NumberListView(list = mainViewModel.numbers)
+                TotalView(list = mainViewModel.notes, onShowAll = { isShowAll = !isShowAll })
+                NotesListView(list = mainViewModel.notes,
+                onExpandClicked = { note ->
+                    mainViewModel.toggleExpandNote(note)
+                },
+                onCheckedChange = { note, isChecked ->
+                    mainViewModel.checkNote(note, isChecked)
+                },
+                onDelete = {
+                    mainViewModel.removeNote(it)
+                })
             }
         }
 
     }
 
+}
 
+
+@Composable
+fun NotesListView(
+    list: List<Note>,
+    onExpandClicked: (Note) -> Unit,
+    onCheckedChange: (Note, Boolean) -> Unit,
+    onDelete: (Note) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(modifier = modifier) {
+        items(items = list, key = { it.id }) { item ->
+            NoteItemView(
+                item = item,
+                isExpanded = item.isExpanded,
+                onToggleExpand = { onExpandClicked(item) },
+                isChecked = item.isChecked,
+                onCheckedChange = { isChecked -> onCheckedChange(item, isChecked) },
+                onDelete = { onDelete(item) },
+                modifier = modifier
+            )
+
+        }
+    }
 }
 
 @Composable
-fun TotalView(list: List<String>, onShowAll: () -> Unit, modifier: Modifier = Modifier){
-    Row(verticalAlignment = Alignment.CenterVertically) {
+fun NoteItemView(
+    item: Note,
+    isExpanded: Boolean,
+    onToggleExpand: () -> Unit,
+    isChecked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(modifier = modifier.padding(top = 8.dp)) {
+        Column {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(checked = isChecked, onCheckedChange = onCheckedChange)
+                Text(text = item.title)
+                Spacer(modifier = Modifier.weight(1f))
+                IconButton(onClick = onToggleExpand) {
+                    Icon(
+                        imageVector = if (isExpanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                        contentDescription = if (isExpanded) "Hide Description" else "Show Description"
+                    )
+                }
+                IconButton(onClick = onDelete) {
+                    Icon(imageVector = Icons.Filled.DeleteOutline, contentDescription = "Delete")
+                }
+            }
+            AnimatedVisibility(
+                visible = isExpanded,
+                Modifier.padding(start = 16.dp, bottom = 16.dp)
+            ) {
+                Text(text = item.description)
+            }
+        }
+    }
+}
+
+@Composable
+fun TotalView(list: List<Note>, onShowAll: () -> Unit, modifier: Modifier = Modifier) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier) {
         Text(
             text = "Total: ${list.count()}",
             style = TextStyle(fontWeight = FontWeight.Bold)
         )
-        Spacer(modifier = modifier.weight(1f))
+        Spacer(modifier = Modifier.weight(1f))
         Button(onClick = onShowAll) {
             Text(text = "Show All")
         }
     }
 }
 
-@Composable
-fun NumberListView(list: List<String>, modifier: Modifier = Modifier) {
-    LazyColumn(modifier = modifier) {
-        items(items = list, key = { it }  ) { item ->
-            NumberItemView(value = item)
-        }
-    }
-}
-
-@Composable
-fun NumberItemView(value: String, modifier: Modifier = Modifier) {
-    //Persisting state
-    var isShowDetail by rememberSaveable { mutableStateOf(false) }
-
-    Card(modifier = modifier.padding(top = 8.dp)) {
-        Column(modifier = modifier.padding(vertical = 4.dp, horizontal = 8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "Data $value")
-                Spacer(modifier = modifier.weight(1f))
-                TextButton(onClick = {
-                    isShowDetail = !isShowDetail
-                }) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = if (!isShowDetail) "Show Detail" else "Hide Detail")
-                        IconButton(onClick = { isShowDetail = !isShowDetail }) {
-                            Icon(imageVector = if(isShowDetail) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore , contentDescription = if (!isShowDetail) "Show Detail" else "Hide Detail")
-                        }
-                    }
-                }
-            }
-            AnimatedVisibility(visible = isShowDetail) {
-                Text(text = "Lorem ipsum dolor sit amet")
-            }
-        }
-    }
-
-
-
-}
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-fun OnBoardingPreview() {
+fun MainPreview() {
     HomePageView(showOnBoarding = false)
 }
