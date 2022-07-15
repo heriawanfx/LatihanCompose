@@ -1,5 +1,6 @@
-package com.heriawanfx.mobile.compose
+package com.heriawanfx.mobile.compose.ui
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -22,32 +23,54 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.heriawanfx.mobile.compose.data.Note
 import com.heriawanfx.mobile.compose.ui.theme.AMSComposeTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            HomePageView()
+            HomePageView(
+                onFabAddClick = {
+                    val intent = Intent(this, DetailActivity::class.java)
+                    startActivity(intent)
+                },
+                onNoteItemClick = {
+                    val intent = Intent(this, DetailActivity::class.java)
+                    intent.putExtra(KEY_NOTE_ID, it.id)
+                    startActivity(intent)
+                }
+            )
         }
     }
 }
 
 @Composable
-fun HomePageView(showOnBoarding: Boolean = true) {
+fun HomePageView(
+    showOnBoarding: Boolean = true,
+    onFabAddClick: () -> Unit = {},
+    onNoteItemClick: (Note) -> Unit = {}
+) {
     AMSComposeTheme {
         //Persisting state
         var shouldShowOnBoarding by rememberSaveable { mutableStateOf(showOnBoarding) }
         if (shouldShowOnBoarding) {
             OnBoardingScreen(onButtonClicked = { shouldShowOnBoarding = false })
         } else {
-            NotesScreen()
+            NotesScreen(onFabAddClick = onFabAddClick, onNoteItemClick = onNoteItemClick)
         }
     }
 }
 
 @Composable
-fun NotesScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel = viewModel()) {
+fun NotesScreen(
+    modifier: Modifier = Modifier,
+    mainViewModel: MainViewModel = viewModel(),
+    onFabAddClick: () -> Unit,
+    onNoteItemClick: (Note) -> Unit
+) {
 
     var isShowAll by rememberSaveable { mutableStateOf(false) }
 
@@ -59,7 +82,7 @@ fun NotesScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel = vi
                 TopAppBar(title = { Text(text = "List of Notes") })
             },
             floatingActionButton = {
-                FloatingActionButton(onClick = { mainViewModel.addNewNote() }) {
+                FloatingActionButton(onClick = onFabAddClick) {
                     Icon(
                         imageVector = Icons.Filled.Add,
                         contentDescription = "Add New"
@@ -70,16 +93,18 @@ fun NotesScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel = vi
         ) {
             Column(modifier = modifier.padding(horizontal = 16.dp)) {
                 TotalView(list = mainViewModel.notes, onShowAll = { isShowAll = !isShowAll })
-                NotesListView(list = mainViewModel.notes,
-                onExpandClicked = { note ->
-                    mainViewModel.toggleExpandNote(note)
-                },
-                onCheckedChange = { note, isChecked ->
-                    mainViewModel.checkNote(note, isChecked)
-                },
-                onDelete = {
-                    mainViewModel.removeNote(it)
-                })
+                NotesListView(
+                    list = mainViewModel.notes,
+                    onNoteItemClick = onNoteItemClick,
+                    onExpandClicked = { note ->
+                        mainViewModel.toggleExpandNote(note)
+                    },
+                    onCheckedChange = { note, isChecked ->
+                        mainViewModel.checkNote(note, isChecked)
+                    },
+                    onDelete = {
+                        mainViewModel.removeNote(it)
+                    })
             }
         }
 
@@ -91,6 +116,7 @@ fun NotesScreen(modifier: Modifier = Modifier, mainViewModel: MainViewModel = vi
 @Composable
 fun NotesListView(
     list: List<Note>,
+    onNoteItemClick: (Note) -> Unit,
     onExpandClicked: (Note) -> Unit,
     onCheckedChange: (Note, Boolean) -> Unit,
     onDelete: (Note) -> Unit,
@@ -100,6 +126,7 @@ fun NotesListView(
         items(items = list, key = { it.id }) { item ->
             NoteItemView(
                 item = item,
+                onNoteItemClick = { onNoteItemClick(item) },
                 isExpanded = item.isExpanded,
                 onToggleExpand = { onExpandClicked(item) },
                 isChecked = item.isChecked,
@@ -112,9 +139,11 @@ fun NotesListView(
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun NoteItemView(
     item: Note,
+    onNoteItemClick: () -> Unit,
     isExpanded: Boolean,
     onToggleExpand: () -> Unit,
     isChecked: Boolean,
@@ -122,7 +151,7 @@ fun NoteItemView(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(modifier = modifier.padding(top = 8.dp)) {
+    Card(modifier = modifier.padding(top = 8.dp), onClick = onNoteItemClick) {
         Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(checked = isChecked, onCheckedChange = onCheckedChange)

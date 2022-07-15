@@ -1,4 +1,4 @@
-package com.heriawanfx.mobile.compose
+package com.heriawanfx.mobile.compose.ui
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column

@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Latihan Compose</string>
     <string name="title_activity_onboarding">Onboarding</string>
+    <string name="title_activity_detail">DetailActivity</string>
 </resources>

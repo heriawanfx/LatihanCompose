@@ -3,6 +3,7 @@
     package="com.heriawanfx.mobile.compose">
 
     <application
+        android:name=".MyApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -10,9 +11,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AMSCompose">
         <activity
-            android:name="com.heriawanfx.mobile.compose.MainActivity"
+            android:name=".ui.DetailActivity"
+            android:exported="false"
+            android:label="@string/title_activity_detail"
+            android:theme="@style/Theme.AMSCompose" />
+        <activity
+            android:name=".ui.MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.AMSCompose">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
