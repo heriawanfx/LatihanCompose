@@ -5,9 +5,10 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Save
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -44,15 +45,19 @@ fun DetailScreen(modifier: Modifier = Modifier, detailViewModel: DetailViewModel
                     Text(text = "SAVE")
                 }, onClick = {
                     Log.e("DetailScreen", "SAVE: ${detailViewModel.getNote()}")
+                }, icon = {
+                    Icon(imageVector = Icons.Filled.Save, contentDescription = "SAVE")
                 })
             }
         ) {
             NoteFormView(
-                modifier = modifier.padding(horizontal = 16.dp),
+                modifier = modifier
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 16.dp),
                 titleValue = detailViewModel.getNote()?.title,
-                onTitleValueChange = { detailViewModel.getNote()?.title = it },
+                onTitleValueChange = { detailViewModel.title = it },
                 descriptionValue = detailViewModel.getNote()?.description,
-                onDescriptionValueChange = { detailViewModel.getNote()?.description = it },
+                onDescriptionValueChange = { detailViewModel.description = it },
             )
         }
     }
@@ -67,13 +72,14 @@ fun NoteFormView(
     onDescriptionValueChange: (String) -> Unit
 ) {
     Column(
-        modifier = modifier.padding(horizontal = 16.dp, vertical = 16.dp),
+        modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
         TextField(value = titleValue ?: "", onValueChange = onTitleValueChange, label = {
             Text(text = "Title")
         })
+        Spacer(modifier = Modifier.height(8.dp))
         TextField(
             value = descriptionValue ?: "",
             onValueChange = onDescriptionValueChange,

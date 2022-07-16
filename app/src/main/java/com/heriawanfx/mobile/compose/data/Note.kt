@@ -6,14 +6,11 @@ import androidx.compose.runtime.setValue
 
 data class Note(
     val id: Int,
-    private val initialTitle: String,
-    private val initialDescription: String,
+    val title: String,
+    val description: String,
     private val initialExpanded: Boolean = false,
     private val initialChecked: Boolean = false,
 ) {
     var isExpanded: Boolean by mutableStateOf(initialExpanded)
     var isChecked: Boolean by mutableStateOf(initialChecked)
-
-    var title: String by mutableStateOf(initialTitle)
-    var description: String by mutableStateOf(initialDescription)
 }
